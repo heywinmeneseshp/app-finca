@@ -1,0 +1,60 @@
+{
+  "expo": {
+    "name": "Corbana Finca",
+    "slug": "app-finca",
+    "version": "0.1.0",
+    "scheme": "app-finca-corbana",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.corbana.appfinca",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "La app usa tu ubicación para registrar dónde se toma cada racimo de la precalibración.",
+        "NSCameraUsageDescription": "La app usa la cámara para reconocer el rostro y registrar la asistencia. No se guardan fotos."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#f4fbf7",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.corbana.appfinca",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-sqlite",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "La app usa tu ubicación para registrar dónde se toma cada racimo de la precalibración."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "La app usa la cámara para reconocer el rostro y registrar la asistencia. No se guardan fotos."
+        }
+      ],
+      "expo-asset",
+      "expo-font"
+    ],
+    "extra": {
+      "router": {}
+    }
+  }
+}
