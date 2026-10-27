@@ -2,7 +2,7 @@
   "expo": {
     "name": "BR Fincas",
     "slug": "app-finca",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "scheme": "app-finca-corbana",
     "orientation": "default",
     "icon": "./assets/icon.png",
