@@ -1,11 +1,9 @@
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useFocusEffect } from 'expo-router';
 import { asistenciaApi } from '@/api/asistencia.api';
-import type { FincaAsistencia, ResultadoPrueba } from '@/api/asistencia.api';
+import type { ResultadoPrueba } from '@/api/asistencia.api';
 import { Button } from '@/components/Button';
 import { CapturaRostroModal } from '@/components/CapturaRostroModal';
-import { SelectField } from '@/components/SelectField';
 import { colors, radius, shadow, spacing } from '@/constants/theme';
 import { obtenerDescriptor, useMotorFacial } from '@/face/motor';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,41 +12,26 @@ const ETIQUETA: Record<ResultadoPrueba['estado'], { texto: string; color: string
   VERIFICADA: { texto: 'Reconocido', color: colors.success },
   NO_RECONOCIDA: { texto: 'No reconocido', color: colors.danger },
   AMBIGUA: { texto: 'Ambiguo (parecido a otra persona)', color: colors.warning },
-  SIN_ENROLADOS: { texto: 'No hay colaboradores con rostro en esta finca', color: colors.warning },
+  SIN_ENROLADOS: { texto: 'No hay colaboradores con rostro registrado', color: colors.warning },
 };
 
 // Piloto de precisión: reconoce un rostro y muestra las distancias al mejor y al segundo candidato, SIN guardar
 // ninguna marcación. Sirve para fijar el umbral con trabajadores reales.
 export default function PruebaRostroScreen() {
   const insets = useSafeAreaInsets();
-  const [fincas, setFincas] = useState<FincaAsistencia[]>([]);
-  const [fincaUuid, setFincaUuid] = useState<string | null>(null);
   const [resultado, setResultado] = useState<ResultadoPrueba | null>(null);
   const [error, setError] = useState('');
   const [abierto, setAbierto] = useState(false);
   const [diagnostico, setDiagnostico] = useState('');
   const motor = useMotorFacial((s) => s.estado);
 
-  useFocusEffect(
-    useCallback(() => {
-      asistenciaApi
-        .rostrosEstado()
-        .then(({ fincas: lista }) => {
-          setFincas(lista);
-          if (lista.length === 1) setFincaUuid(lista[0].uuid);
-        })
-        .catch((e: Error) => setError(e.message));
-    }, []),
-  );
-
   const alFoto = async (base64: string) => {
-    if (!fincaUuid) return;
     setError('');
     setResultado(null);
     try {
       const { descriptor, backend, ms } = await obtenerDescriptor(base64);
       setDiagnostico(`Motor ${backend ?? '?'} · ${ms ?? '?'} ms`);
-      setResultado(await asistenciaApi.probar(fincaUuid, descriptor));
+      setResultado(await asistenciaApi.probar(descriptor));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No se pudo hacer la prueba.');
     }
@@ -59,11 +42,8 @@ export default function PruebaRostroScreen() {
   return (
     <ScrollView contentContainerStyle={[styles.container, { paddingBottom: spacing.xl + insets.bottom }]}>
       <Text style={styles.intro}>Prueba de reconocimiento: no guarda marcaciones. Úsala para medir qué tan bien reconoce a tus trabajadores.</Text>
-      <View style={styles.card}>
-        <SelectField label="Finca" value={fincaUuid} options={fincas.map((f) => ({ value: f.uuid, label: f.nombre }))} onChange={setFincaUuid} />
-      </View>
       <View style={{ marginTop: spacing.md }}>
-        <Button label="Abrir cámara" onPress={() => { setError(''); setResultado(null); setAbierto(true); }} disabled={!fincaUuid || motor !== 'listo'} />
+        <Button label="Abrir cámara" onPress={() => { setError(''); setResultado(null); setAbierto(true); }} disabled={motor !== 'listo'} />
         {motor !== 'listo' && <Text style={styles.nota}>Preparando el reconocimiento facial...</Text>}
       </View>
 

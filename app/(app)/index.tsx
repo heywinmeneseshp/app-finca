@@ -1,18 +1,26 @@
 import { useCallback, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
-import { Button } from '@/components/Button';
 import { colors, radius, shadow, spacing } from '@/constants/theme';
 import { resumenPendientes } from '@/services/precalibracion.service';
 import { useSessionStore } from '@/stores/useSessionStore';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+const saludo = () => {
+  const h = new Date().getHours();
+  return h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches';
+};
+const primerNombre = (nombre?: string) => (nombre ?? '').trim().split(/\s+/)[0];
+const fechaHoy = () => {
+  const t = new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
+  return t.charAt(0).toUpperCase() + t.slice(1);
+};
+
 export default function InicioScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const user = useSessionStore((s) => s.user);
-  const logout = useSessionStore((s) => s.logout);
   const hasPermission = useSessionStore((s) => s.hasPermission);
   const [pendientes, setPendientes] = useState(0);
 
@@ -22,19 +30,10 @@ export default function InicioScreen() {
     }, []),
   );
 
-  const salir = async () => {
-    const { total } = await resumenPendientes();
-    const aviso = total > 0 ? `Tienes ${total} registro(s) sin enviar. Se conservan en el dispositivo, pero conviene sincronizarlos antes de salir.\n\n` : '';
-    Alert.alert('Cerrar sesión', `${aviso}¿Quieres cerrar sesión?`, [
-      { text: 'Cancelar', style: 'cancel' },
-      { text: 'Cerrar sesión', style: 'destructive', onPress: () => logout() },
-    ]);
-  };
-
   return (
     <ScrollView contentContainerStyle={[styles.container, { paddingBottom: spacing.xl + insets.bottom }]}>
-      <Text style={styles.saludo}>Hola, {user?.nombre}</Text>
-      <Text style={styles.sub}>¿Qué vas a hacer hoy?</Text>
+      <Text style={styles.fecha}>{fechaHoy()}</Text>
+      <Text style={styles.saludo}>{saludo()}, {primerNombre(user?.nombre)}</Text>
 
       {hasPermission('precalibracion.crear') && (
         <Pressable style={({ pressed }) => [styles.card, pressed && { opacity: 0.9 }]} onPress={() => router.push('/precalibrador')}>
@@ -43,7 +42,7 @@ export default function InicioScreen() {
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.cardTitulo}>Precalibrador</Text>
-            <Text style={styles.cardTexto}>Registra los racimos que cumplen la medida del calibrador.</Text>
+            <Text style={styles.cardTexto}>Registrar racimos aptos</Text>
             {pendientes > 0 && <Text style={styles.pendiente}>{pendientes} registro(s) sin enviar</Text>}
           </View>
         </Pressable>
@@ -56,22 +55,19 @@ export default function InicioScreen() {
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.cardTitulo}>Colaboradores</Text>
-            <Text style={styles.cardTexto}>Asistencia, registro de rostro, prueba de reconocimiento y nuevos colaboradores.</Text>
+            <Text style={styles.cardTexto}>Asistencia y registros</Text>
           </View>
         </Pressable>
       )}
 
-      <View style={{ marginTop: spacing.lg }}>
-        <Button label="Cerrar sesión" variant="outline" onPress={salir} />
-      </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { padding: spacing.lg },
-  saludo: { fontSize: 24, fontWeight: '700', color: colors.text },
-  sub: { color: colors.textMuted, marginBottom: spacing.lg, marginTop: spacing.xs },
+  fecha: { color: colors.primary, fontWeight: '600', fontSize: 13 },
+  saludo: { fontSize: 24, fontWeight: '700', color: colors.text, marginBottom: spacing.lg },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -83,7 +79,7 @@ const styles = StyleSheet.create({
   },
   cardSep: { marginTop: spacing.md },
   iconoBox: { width: 52, height: 52, borderRadius: 26, backgroundColor: '#e8f6ee', alignItems: 'center', justifyContent: 'center' },
-  cardTitulo: { fontSize: 18, fontWeight: '700', color: colors.text },
   cardTexto: { color: colors.textMuted, marginTop: 2 },
+  cardTitulo: { fontSize: 18, fontWeight: '700', color: colors.text },
   pendiente: { color: colors.warning, fontWeight: '600', marginTop: spacing.xs },
 });

@@ -9,6 +9,8 @@ export interface ColaboradorRostro {
   uuid: string;
   nombre: string;
   documento: string | null;
+  /** Usuario vinculado (si tiene). */
+  userUuid?: string | null;
   finca: FincaAsistencia | null;
   muestras: number;
   enrolado: boolean;
@@ -18,6 +20,15 @@ export interface ColaboradorRostro {
 export interface RostrosEstado {
   fincas: FincaAsistencia[];
   colaboradores: ColaboradorRostro[];
+}
+
+export interface UsuarioBasico {
+  uuid: string;
+  usuario: string;
+  nombre: string;
+  apellido: string;
+  email: string;
+  cargo?: string | null;
 }
 
 export type TipoMarcacion = 'ENTRADA' | 'SALIDA';
@@ -79,11 +90,12 @@ export const asistenciaApi = {
   marcar: (marcaciones: MarcacionPayload[]) =>
     apiRequest<RespuestaMarcaciones>('/asistencia/marcaciones', { method: 'POST', body: { marcaciones } }),
 
-  crearColaborador: (datos: { nombre: string; apellido: string; documento: string; telefono: string; email: string; cargo: string; fincaUuid: string }) =>
+  listarUsuarios: () => apiRequest<{ items: UsuarioBasico[] }>('/users', { query: { limit: 100 } }),
+
+  crearColaborador: (datos: { nombre: string; apellido: string; documento: string; telefono: string; email: string; cargo: string; fincaUuid?: string; userUuid?: string }) =>
     apiRequest<{ uuid: string }>('/colaboradores', { method: 'POST', body: datos }),
 
-  probar: (fincaUuid: string, descriptor: number[]) =>
-    apiRequest<ResultadoPrueba>('/asistencia/probar', { method: 'POST', body: { fincaUuid, descriptor } }),
+  probar: (descriptor: number[]) => apiRequest<ResultadoPrueba>('/asistencia/probar', { method: 'POST', body: { descriptor } }),
 };
 
 export default asistenciaApi;

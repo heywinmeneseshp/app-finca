@@ -1,11 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ComponentType, type Ref } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { WebView } from 'react-native-webview';
-import type { WebViewMessageEvent } from 'react-native-webview';
+import type { WebViewMessageEvent, WebViewProps } from 'react-native-webview';
 import { paginaFacial } from '@/face/paginaFacial';
 import { ASSETS_FACIALES, leerAsset, registrarEnvio, resolverResultado, useMotorFacial } from '@/face/motor';
 
 const PARTE = 400_000; // caracteres de base64 por mensaje al WebView
+
+// react-native-webview 14 no resuelve bien sus props con los tipos de React 19.3 (todas quedan como `never`).
+const WebViewVista = WebView as unknown as ComponentType<WebViewProps & { ref?: Ref<WebView> }>;
 
 // Motor de reconocimiento facial: un WebView oculto donde corre face-api. Se monta una vez (en el layout de la app
 // autenticada) y carga los modelos desde los assets, sin internet.
@@ -70,7 +73,7 @@ export function FaceEngine() {
   if (!html) return null;
   return (
     <View style={styles.oculto} pointerEvents="none">
-      <WebView
+      <WebViewVista
         ref={webRef}
         originWhitelist={['*']}
         source={{ html }}

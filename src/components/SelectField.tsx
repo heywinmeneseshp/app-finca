@@ -88,10 +88,10 @@ export function SelectField({ label, value, options, placeholder = 'Selecciona',
 }
 
 const styles = StyleSheet.create({
-  wrapper: { marginBottom: spacing.md },
-  label: { fontSize: 13, fontWeight: '600', color: colors.text, marginBottom: spacing.xs },
+  wrapper: { marginBottom: spacing.sm },
+  label: { fontSize: 12, fontWeight: '600', color: colors.text, marginBottom: 2 },
   input: {
-    minHeight: 48,
+    minHeight: 38,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.sm,
@@ -101,8 +101,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  valor: { fontSize: 16, color: colors.text, flex: 1 },
-  placeholder: { fontSize: 16, color: colors.textMuted, flex: 1 },
+  valor: { fontSize: 14, color: colors.text, flex: 1 },
+  placeholder: { fontSize: 14, color: colors.textMuted, flex: 1 },
   modal: { flex: 1, backgroundColor: colors.background },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: spacing.md },
   modalTitulo: { fontSize: 18, fontWeight: '700', color: colors.text },

@@ -16,6 +16,14 @@ export const getDb = (): Promise<SQLite.SQLiteDatabase> => {
           error TEXT,
           created_at INTEGER NOT NULL
         );
+        CREATE TABLE IF NOT EXISTS precal_traza (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          sesion_uuid TEXT NOT NULL,
+          lat REAL NOT NULL,
+          lng REAL NOT NULL,
+          precision_m REAL,
+          t TEXT NOT NULL
+        );
         CREATE TABLE IF NOT EXISTS asistencia_cola (
           uuid TEXT PRIMARY KEY NOT NULL,
           payload TEXT NOT NULL,

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import '@/services/trazaBackground';
 import { ActivityIndicator, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';

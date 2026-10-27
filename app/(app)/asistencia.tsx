@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
   card: { backgroundColor: colors.surface, borderRadius: radius.lg, padding: spacing.md, ...shadow.sm },
   label: { fontSize: 13, fontWeight: '600', color: colors.text, marginBottom: spacing.xs },
   tipos: { flexDirection: 'row', gap: spacing.sm },
-  tipo: { flex: 1, minHeight: 48, borderRadius: radius.sm, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface },
+  tipo: { flex: 1, minHeight: 38, borderRadius: radius.sm, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface },
   tipoActivo: { backgroundColor: colors.primary, borderColor: colors.primary },
   tipoTexto: { fontSize: 16, fontWeight: '700', color: colors.text },
   ayuda: { color: colors.textMuted, textAlign: 'center', marginTop: spacing.sm },

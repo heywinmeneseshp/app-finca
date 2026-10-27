@@ -32,16 +32,17 @@ export function TextField({ label, error, style, accionLabel, onAccionPress, ...
 }
 
 const styles = StyleSheet.create({
-  wrapper: { marginBottom: spacing.md },
-  label: { fontSize: 13, fontWeight: '600', color: colors.text, marginBottom: spacing.xs },
+  wrapper: { marginBottom: spacing.sm },
+  label: { fontSize: 12, fontWeight: '600', color: colors.text, marginBottom: 2 },
   input: {
-    minHeight: 48,
+    minHeight: 38,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.sm,
     backgroundColor: colors.surface,
     paddingHorizontal: spacing.md,
-    fontSize: 16,
+    fontSize: 14,
+    paddingVertical: spacing.xs,
     color: colors.text,
   },
   error: { color: colors.danger, fontSize: 12, marginTop: spacing.xs },

@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "Corbana Finca",
+    "name": "BR Fincas",
     "slug": "app-finca",
     "version": "0.1.0",
     "scheme": "app-finca-corbana",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
@@ -12,13 +12,17 @@
       "bundleIdentifier": "com.corbana.appfinca",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
+        "UIBackgroundModes": [
+          "location"
+        ],
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "La app guarda tu recorrido durante la precalibración aunque bloquees el teléfono.",
         "NSLocationWhenInUseUsageDescription": "La app usa tu ubicación para registrar dónde se toma cada racimo de la precalibración.",
         "NSCameraUsageDescription": "La app usa la cámara para reconocer el rostro y registrar la asistencia. No se guardan fotos."
       }
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#f4fbf7",
+        "backgroundColor": "#ffffff",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -26,10 +30,17 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.corbana.appfinca",
       "permissions": [
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION",
-        "CAMERA"
-      ]
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_LOCATION",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -41,7 +52,10 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "La app usa tu ubicación para registrar dónde se toma cada racimo de la precalibración."
+          "locationWhenInUsePermission": "La app usa tu ubicación para registrar dónde se toma cada racimo de la precalibración.",
+          "locationAlwaysAndWhenInUsePermission": "La app guarda tu recorrido durante la precalibración aunque bloquees el teléfono.",
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
         }
       ],
       [
@@ -50,11 +64,18 @@
           "cameraPermission": "La app usa la cámara para reconocer el rostro y registrar la asistencia. No se guardan fotos."
         }
       ],
+      "expo-screen-orientation",
       "expo-asset",
       "expo-font"
     ],
     "extra": {
-      "router": {}
+      "router": {},
+      "eas": {
+        "projectId": "2ecf6445-2917-414c-9491-0bdddc604ecc"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/2ecf6445-2917-414c-9491-0bdddc604ecc"
     }
   }
 }

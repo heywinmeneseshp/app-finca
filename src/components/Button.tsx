@@ -33,11 +33,11 @@ export function Button({ label, onPress, loading, disabled, variant = 'primary' 
 }
 
 const styles = StyleSheet.create({
-  base: { minHeight: 48, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.md },
+  base: { minHeight: 38, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.md },
   primary: { backgroundColor: colors.primary },
   outline: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.primary },
   disabled: { opacity: 0.5 },
-  label: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  label: { color: '#fff', fontSize: 14, fontWeight: '600' },
 });
 
 export default Button;

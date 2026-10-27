@@ -9,6 +9,12 @@ export const authApi = {
     apiRequest<null>('/auth/logout', { method: 'POST', body: { refreshToken }, auth: false }),
 
   me: () => apiRequest<AuthUser>('/auth/me'),
+
+  updateProfile: (datos: { nombre: string; apellido: string; email: string }) =>
+    apiRequest<unknown>('/auth/me', { method: 'PUT', body: datos }),
+
+  changePassword: (currentPassword: string, newPassword: string) =>
+    apiRequest<unknown>('/auth/me/password', { method: 'PUT', body: { currentPassword, newPassword } }),
 };
 
 export default authApi;

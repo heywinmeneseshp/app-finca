@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/Button';
 import { TextField } from '@/components/TextField';
@@ -38,10 +38,8 @@ export default function LoginScreen() {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <View style={styles.brand}>
-            <View style={styles.logo}>
-              <Text style={styles.logoTexto}>C</Text>
-            </View>
-            <Text style={styles.title}>Corbana Finca</Text>
+            <Image source={require('../assets/icon.png')} style={styles.logo} />
+            <Text style={styles.title}>BR Fincas</Text>
             <Text style={styles.subtitle}>Herramientas de campo</Text>
           </View>
 
@@ -75,12 +73,8 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    alignItems: 'center',
-    justifyContent: 'center',
     marginBottom: spacing.md,
   },
-  logoTexto: { color: '#fff', fontSize: 30, fontWeight: '800' },
   title: { fontSize: 28, fontWeight: '700', color: '#fff' },
   subtitle: { fontSize: 14, color: 'rgba(240,253,244,0.75)', marginTop: spacing.xs },
   form: {

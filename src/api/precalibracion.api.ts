@@ -35,8 +35,18 @@ export interface OpcionesPrecalibracion {
   valores: OpcionValor[];
   cintas: OpcionCinta[];
   /** Configuración efectiva por finca (edades y calibres habilitados): se configura en la web, pestaña Configuración. */
-  configPorFinca?: Record<string, { edades: number[]; valores: string[] }>;
+  configPorFinca?: Record<string, { edades: number[]; valores: string[]; segundosEspera?: number; modalidad?: ModalidadPrecalibracion }>;
   semanaActualId: string | null;
+}
+
+/** Modalidad de la sesión: VIGENTE = se precalibra la semana del corte; ANTICIPADA = una semana antes del corte. */
+export type ModalidadPrecalibracion = 'VIGENTE' | 'ANTICIPADA';
+
+export interface SesionPrecalibracion {
+  uuid: string;
+  tipo: ModalidadPrecalibracion;
+  /** Hora de inicio de la sesión (ISO). */
+  inicio: string;
 }
 
 export interface RegistroPrecalibracion {
@@ -50,6 +60,8 @@ export interface RegistroPrecalibracion {
   fecha: string;
   lat: number | null;
   lng: number | null;
+  /** Sesión a la que pertenece el racimo (el servidor la crea la primera vez que llega). */
+  sesion?: SesionPrecalibracion;
 }
 
 export interface ResultadoRegistro {
@@ -71,6 +83,12 @@ export const precalibracionApi = {
 
   registrar: (registros: RegistroPrecalibracion[]) =>
     apiRequest<RespuestaRegistrar>('/precalibracion/registros', { method: 'POST', body: { registros } }),
+
+  enviarTraza: (uuid: string, puntos: { lat: number; lng: number; t: string; precision?: number | null }[]) =>
+    apiRequest<{ recibidos: number }>(`/precalibracion/sesiones/${uuid}/traza`, { method: 'POST', body: { puntos } }),
+
+  cerrarSesion: (uuid: string, fin: string) =>
+    apiRequest<{ uuid: string }>(`/precalibracion/sesiones/${uuid}/cerrar`, { method: 'POST', body: { fin } }),
 };
 
 export default precalibracionApi;

@@ -21,32 +21,32 @@ export default function ColaboradoresScreen() {
 
   const opciones: Opcion[] = [
     {
-      ruta: '/asistencia',
-      icono: 'user-check',
-      titulo: 'Asistencia',
-      texto: 'Marca entrada o salida con el reconocimiento del rostro, en cualquier finca.',
-      visible: hasPermission('asistencia.marcar') || hasPermission('asistencia.marcar_cuadrilla'),
-    },
-    {
       ruta: '/crear-colaborador',
+      texto: 'Registrar un colaborador',
       icono: 'user-plus',
       titulo: 'Nuevo colaborador',
-      texto: 'Crea un colaborador con su identificación y finca predeterminada.',
       visible: hasPermission('colaborador.crear'),
     },
     {
       ruta: '/enrolar-rostro',
+      texto: 'Guardar el rostro',
       icono: 'camera',
       titulo: 'Registrar rostro',
-      texto: 'Enrola la cara de un colaborador desde varios ángulos.',
       visible: hasPermission('colaborador.editar'),
     },
     {
       ruta: '/prueba-rostro',
+      texto: 'Probar el reconocimiento',
       icono: 'target',
       titulo: 'Prueba de reconocimiento',
-      texto: 'Mide qué tan bien reconoce, sin guardar marcaciones.',
       visible: hasPermission('asistencia.marcar_cuadrilla'),
+    },
+    {
+      ruta: '/asistencia',
+      texto: 'Marcar entrada o salida',
+      icono: 'user-check',
+      titulo: 'Asistencia',
+      visible: hasPermission('asistencia.marcar') || hasPermission('asistencia.marcar_cuadrilla'),
     },
   ];
 
@@ -74,6 +74,6 @@ const styles = StyleSheet.create({
   card: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, backgroundColor: colors.surface, borderRadius: radius.lg, padding: spacing.md, ...shadow.sm },
   cardSep: { marginTop: spacing.md },
   iconoBox: { width: 52, height: 52, borderRadius: 26, backgroundColor: '#e8f6ee', alignItems: 'center', justifyContent: 'center' },
-  cardTitulo: { fontSize: 18, fontWeight: '700', color: colors.text },
   cardTexto: { color: colors.textMuted, marginTop: 2 },
+  cardTitulo: { fontSize: 18, fontWeight: '700', color: colors.text },
 });
