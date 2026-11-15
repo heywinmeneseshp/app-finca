@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import '@/services/trazaBackground';
 import { ActivityIndicator, View } from 'react-native';
+import { UpdateModal } from '@/components/UpdateModal';
 import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { setUnauthorizedHandler } from '@/api/client';
@@ -36,6 +37,7 @@ export default function RootLayout() {
           <Stack.Screen name="(app)" />
         </Stack.Protected>
       </Stack>
+      <UpdateModal />
     </SafeAreaProvider>
   );
 }
