@@ -6,7 +6,7 @@ import { useSessionStore } from '@/stores/useSessionStore';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface Opcion {
-  ruta: '/asistencia' | '/enrolar-rostro' | '/prueba-rostro' | '/crear-colaborador';
+  ruta: '/asistencia' | '/enrolar-rostro' | '/crear-colaborador' | '/mi-ficha';
   icono: keyof typeof Feather.glyphMap;
   titulo: string;
   texto: string;
@@ -18,35 +18,39 @@ export default function ColaboradoresScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const hasPermission = useSessionStore((s) => s.hasPermission);
+  const gestionaColaboradores = hasPermission('colaborador.crear') || hasPermission('colaborador.editar');
+  // «Registrar asistencia»: marca a cualquiera y crea/enrola solo colaboradores nuevos.
+  const registra = hasPermission('asistencia.registrar');
 
   const opciones: Opcion[] = [
+    {
+      ruta: '/mi-ficha',
+      texto: 'Tu ficha de colaborador y tu rostro',
+      icono: 'user',
+      titulo: 'Mi ficha',
+      visible: hasPermission('asistencia.marcar') || hasPermission('asistencia.marcar_cuadrilla') || hasPermission('colaborador.crear'),
+    },
     {
       ruta: '/crear-colaborador',
       texto: 'Registrar un colaborador',
       icono: 'user-plus',
       titulo: 'Nuevo colaborador',
-      visible: hasPermission('colaborador.crear'),
+      visible: hasPermission('colaborador.crear') || registra,
     },
     {
       ruta: '/enrolar-rostro',
-      texto: 'Guardar el rostro',
+      texto: gestionaColaboradores ? 'Guardar el rostro' : 'Registrar o reforzar tu rostro',
       icono: 'camera',
-      titulo: 'Registrar rostro',
-      visible: hasPermission('colaborador.editar'),
-    },
-    {
-      ruta: '/prueba-rostro',
-      texto: 'Probar el reconocimiento',
-      icono: 'target',
-      titulo: 'Prueba de reconocimiento',
-      visible: hasPermission('asistencia.marcar_cuadrilla'),
+      titulo: gestionaColaboradores ? 'Registrar rostro' : 'Mi rostro',
+      // Quien crea o edita colaboradores registra el rostro de los de sus fincas (una vez); quien solo marca, el suyo.
+      visible: gestionaColaboradores || registra || hasPermission('asistencia.marcar') || hasPermission('asistencia.marcar_cuadrilla'),
     },
     {
       ruta: '/asistencia',
       texto: 'Marcar entrada o salida',
       icono: 'user-check',
       titulo: 'Asistencia',
-      visible: hasPermission('asistencia.marcar') || hasPermission('asistencia.marcar_cuadrilla'),
+      visible: hasPermission('asistencia.marcar') || hasPermission('asistencia.marcar_cuadrilla') || registra,
     },
   ];
 

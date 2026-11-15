@@ -1,6 +1,7 @@
 import { authApi } from '@/api/auth.api';
 import { getDb, kvDelete, kvGet, kvSet } from '@/services/db';
 import { tokenStorage } from '@/services/tokenStorage';
+import { borrarRostrosLocales } from '@/services/rostrosLocales';
 import type { AuthUser } from '@/types/auth';
 
 const CURRENT_USER_KEY = 'currentUser';
@@ -28,6 +29,8 @@ export const authService = {
     // Las fincas/lotes dependen del usuario (restricción por finca): se borran para no mostrarlas a otra persona.
     // La cola de registros pendientes NO se toca: son datos de trabajo que aún no se han enviado.
     await kvDelete(OPCIONES_KEY);
+    // Los rostros guardados para reconocer sin internet no sobreviven al cierre de sesión.
+    await borrarRostrosLocales();
     await getDb();
   },
 

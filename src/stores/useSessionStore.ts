@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { precargarUbicaciones } from '@/services/asistencia.service';
+import { limpiarRostrosVencidos } from '@/services/rostrosLocales';
 import { authService } from '@/services/auth.service';
 import type { AuthUser } from '@/types/auth';
 
@@ -28,6 +30,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     const user = await authService.bootstrapSession();
     set({ user, status: 'ready' });
     if (user) {
+      void precargarUbicaciones();
+      void limpiarRostrosVencidos();
       authService.refreshProfileInBackground().then((refreshed) => {
         if (refreshed) set({ user: refreshed });
       });
@@ -37,6 +41,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   login: async (usuario, password) => {
     const user = await authService.login(usuario, password);
     set({ user, status: 'ready' });
+    void precargarUbicaciones(); // ya con internet: deja los sitios guardados para poder marcar sin conexión
   },
 
   logout: async () => {

@@ -48,7 +48,7 @@ export default function InicioScreen() {
         </Pressable>
       )}
 
-      {(hasPermission('asistencia.marcar') || hasPermission('asistencia.marcar_cuadrilla') || hasPermission('colaborador.editar') || hasPermission('colaborador.crear')) && (
+      {(hasPermission('asistencia.marcar') || hasPermission('asistencia.marcar_cuadrilla') || hasPermission('asistencia.registrar') || hasPermission('colaborador.editar') || hasPermission('colaborador.crear')) && (
         <Pressable style={({ pressed }) => [styles.card, styles.cardSep, pressed && { opacity: 0.9 }]} onPress={() => router.push('/colaboradores')}>
           <View style={styles.iconoBox}>
             <Feather name="users" size={24} color={colors.primary} />

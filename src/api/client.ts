@@ -28,6 +28,8 @@ const buildUrl = (path: string, query?: RequestOptions['query']) => {
   return url.toString();
 };
 
+const TIEMPO_LIMITE_MS = 8000;
+
 const rawFetch = async <T>(path: string, options: RequestOptions, accessToken: string | null) => {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -38,14 +40,21 @@ const rawFetch = async <T>(path: string, options: RequestOptions, accessToken: s
   };
   if (options.auth !== false && accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
-  const response = await fetch(buildUrl(path, options.query), {
-    method: options.method ?? 'GET',
-    headers,
-    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
-  });
-
-  const envelope = (await response.json()) as ApiEnvelope<T>;
-  return { response, envelope };
+  // Con señal débil o nula una petición puede quedar colgada: se corta a los 8 s y se trata como falla de red.
+  const controlador = new AbortController();
+  const corte = setTimeout(() => controlador.abort(), TIEMPO_LIMITE_MS);
+  try {
+    const response = await fetch(buildUrl(path, options.query), {
+      method: options.method ?? 'GET',
+      headers,
+      body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+      signal: controlador.signal,
+    });
+    const envelope = (await response.json()) as ApiEnvelope<T>;
+    return { response, envelope };
+  } finally {
+    clearTimeout(corte);
+  }
 };
 
 type RefreshResult = { ok: true; accessToken: string } | { ok: false; reason: 'invalid' | 'network' };

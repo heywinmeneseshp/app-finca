@@ -13,6 +13,7 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "UIBackgroundModes": [
+          "location",
           "location"
         ],
         "NSLocationAlwaysAndWhenInUseUsageDescription": "La app guarda tu recorrido durante la precalibración aunque bloquees el teléfono.",
@@ -36,7 +37,18 @@
         "android.permission.ACCESS_BACKGROUND_LOCATION",
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_LOCATION",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_LOCATION",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.POST_NOTIFICATIONS"
       ],
       "runtimeVersion": {
         "policy": "appVersion"
@@ -76,6 +88,9 @@
     },
     "updates": {
       "url": "https://u.expo.dev/2ecf6445-2917-414c-9491-0bdddc604ecc"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
     }
   }
 }

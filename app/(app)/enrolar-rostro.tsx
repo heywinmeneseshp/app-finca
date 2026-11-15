@@ -1,11 +1,12 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { asistenciaApi } from '@/api/asistencia.api';
 import type { ColaboradorRostro } from '@/api/asistencia.api';
 import { Button } from '@/components/Button';
 import { CapturaRostroModal } from '@/components/CapturaRostroModal';
 import { SelectField } from '@/components/SelectField';
+import { useSessionStore } from '@/stores/useSessionStore';
 import { colors, radius, shadow, spacing } from '@/constants/theme';
 import { obtenerDescriptor } from '@/face/motor';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,10 +19,14 @@ const POSES = [
   { id: 'arriba', texto: 'Levanta un poco la cara' },
   { id: 'abajo', texto: 'Baja un poco la cara' },
 ];
+const MAX_MUESTRAS = 8; // mismo tope que la API
 
 // Registra el rostro de un colaborador (5 capturas guiadas). No se guardan fotos: solo los vectores (números).
+// Si ya tiene rostro: «Reforzar» agrega capturas sin aprobación; «Volver a registrar» queda pendiente hasta que otro usuario
+// con permiso lo apruebe (mientras tanto el rostro actual sigue funcionando). Quien solo marca asistencia ve únicamente su ficha.
 export default function EnrolarRostroScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [colaboradores, setColaboradores] = useState<ColaboradorRostro[]>([]);
   const [colaboradorUuid, setColaboradorUuid] = useState<string | null>(null);
   const [consentimiento, setConsentimiento] = useState(false);
@@ -30,18 +35,31 @@ export default function EnrolarRostroScreen() {
   const [guardando, setGuardando] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [abierto, setAbierto] = useState(false);
+  const [modo, setModo] = useState<'nuevo' | 'reforzar' | 'reemplazar'>('nuevo');
+  const hasPermission = useSessionStore((st) => st.hasPermission);
+  // Quien solo registra asistencia enrola únicamente a colaboradores nuevos (sin rostro).
+  const soloNuevos =
+    hasPermission('asistencia.registrar') &&
+    !['colaborador.crear', 'colaborador.editar', 'sanidad_vegetal.colaboradores.crear', 'sanidad_vegetal.colaboradores.editar'].some((p) => hasPermission(p));
 
   const cargar = useCallback(async () => {
     try {
-      const { colaboradores: lista } = await asistenciaApi.rostrosEstado();
+      const { colaboradores: todos } = await asistenciaApi.rostrosEstado();
+      const lista = soloNuevos ? todos.filter((c) => !c.enrolado) : todos;
       setColaboradores(lista);
+      // Quien solo marca su asistencia recibe únicamente su ficha: se elige sola.
+      if (lista.length === 1) {
+        setColaboradorUuid(lista[0].uuid);
+        setConsentimiento(Boolean(lista[0].consentimiento));
+        setModo(lista[0].enrolado ? (MAX_MUESTRAS - lista[0].muestras > 0 ? 'reforzar' : 'reemplazar') : 'nuevo');
+      }
       setError('');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No se pudo cargar la lista. Se necesita conexión.');
     } finally {
       setCargando(false);
     }
-  }, []);
+  }, [soloNuevos]);
 
   useFocusEffect(
     useCallback(() => {
@@ -50,14 +68,22 @@ export default function EnrolarRostroScreen() {
   );
 
   const colaborador = useMemo(() => colaboradores.find((c) => c.uuid === colaboradorUuid) ?? null, [colaboradores, colaboradorUuid]);
-  const poseActual = POSES[muestras.length];
-  const completo = muestras.length === POSES.length;
+  const libres = colaborador ? Math.max(0, MAX_MUESTRAS - colaborador.muestras) : 0;
+  const poses = modo === 'reforzar' ? POSES.slice(0, Math.min(POSES.length, libres)) : POSES;
+  const poseActual = poses[muestras.length];
+  const completo = poses.length > 0 && muestras.length === poses.length;
 
   const elegir = (uuid: string) => {
+    const c = colaboradores.find((x) => x.uuid === uuid);
     setColaboradorUuid(uuid);
     setMuestras([]);
     setError('');
-    setConsentimiento(Boolean(colaboradores.find((c) => c.uuid === uuid)?.consentimiento));
+    setConsentimiento(Boolean(c?.consentimiento));
+    setModo(c?.enrolado ? (MAX_MUESTRAS - c.muestras > 0 ? 'reforzar' : 'reemplazar') : 'nuevo');
+  };
+  const cambiarModo = (m: 'reforzar' | 'reemplazar') => {
+    setModo(m);
+    setMuestras([]);
   };
 
   const abrirCaptura = () => {
@@ -71,7 +97,7 @@ export default function EnrolarRostroScreen() {
     try {
       const { descriptor } = await obtenerDescriptor(base64);
       setMuestras((m) => [...m, { pose: poseActual.id, descriptor }]);
-      if (muestras.length + 1 >= POSES.length) setAbierto(false); // última pose: se cierra solo
+      if (muestras.length + 1 >= poses.length) setAbierto(false); // última pose: se cierra solo
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No se pudo procesar la captura.');
     }
@@ -82,8 +108,15 @@ export default function EnrolarRostroScreen() {
     setGuardando(true);
     setError('');
     try {
-      await asistenciaApi.enrolar(colaborador.uuid, muestras, consentimiento);
-      Alert.alert('Listo', `El rostro de ${colaborador.nombre} quedó registrado.`);
+      const r = await asistenciaApi.enrolar(colaborador.uuid, muestras, consentimiento, modo === 'reforzar');
+      Alert.alert(
+        r.solicitud ? 'Enviado para aprobación' : 'Listo',
+        r.solicitud
+          ? 'El nuevo registro queda pendiente hasta que otro usuario con permiso lo apruebe. Mientras tanto el rostro actual sigue funcionando.'
+          : modo === 'reforzar'
+            ? `Se agregaron ${muestras.length} capturas al rostro de ${colaborador.nombre}.`
+            : `El rostro de ${colaborador.nombre} quedó registrado.`,
+      );
       setMuestras([]);
       setColaboradorUuid(null);
       cargar();
@@ -102,6 +135,18 @@ export default function EnrolarRostroScreen() {
     );
   }
 
+  if (colaboradores.length === 0 && !error) {
+    return (
+      <ScrollView contentContainerStyle={[styles.container, { paddingBottom: spacing.xl + insets.bottom }]}>
+        <View style={styles.card}>
+          <Text style={styles.pose}>Aún no tienes ficha de colaborador</Text>
+          <Text style={[styles.nota, { marginBottom: spacing.md }]}>Créala primero; luego vuelve aquí para registrar tu rostro.</Text>
+          <Button label="Crear mi ficha" onPress={() => router.push('/mi-ficha')} />
+        </View>
+      </ScrollView>
+    );
+  }
+
   return (
     <ScrollView contentContainerStyle={[styles.container, { paddingBottom: spacing.xl + insets.bottom }]} keyboardShouldPersistTaps="handled">
       <View style={styles.card}>
@@ -114,8 +159,22 @@ export default function EnrolarRostroScreen() {
         {colaborador && (
           <>
             <Text style={styles.nota}>
-              {colaborador.enrolado ? `Ya tiene ${colaborador.muestras} captura(s). Si continúas se reemplazan.` : 'Aún no tiene rostro registrado.'}
+              {!colaborador.enrolado
+                ? 'Aún no tiene rostro registrado.'
+                : modo === 'reforzar'
+                  ? `Ya tiene ${colaborador.muestras} captura(s): se agregan ${poses.length} más, sin aprobación.`
+                  : 'Las capturas nuevas reemplazarán el rostro cuando otro usuario con permiso las apruebe.'}
             </Text>
+            {colaborador.enrolado && (
+              <View style={[styles.fila, { marginTop: spacing.sm }]}>
+                <View style={{ flex: 1 }}>
+                  <Button label="Reforzar" variant={modo === 'reforzar' ? undefined : 'outline'} disabled={libres === 0} onPress={() => cambiarModo('reforzar')} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Button label="Volver a registrar" variant={modo === 'reemplazar' ? undefined : 'outline'} onPress={() => cambiarModo('reemplazar')} />
+                </View>
+              </View>
+            )}
             <View style={styles.fila}>
               <Switch value={consentimiento} onValueChange={setConsentimiento} trackColor={{ true: colors.primary }} />
               <Text style={styles.consentimiento}>El colaborador autoriza el tratamiento de su dato biométrico (huella facial) para registrar su asistencia.</Text>
@@ -128,15 +187,19 @@ export default function EnrolarRostroScreen() {
         <View style={[styles.card, { marginTop: spacing.md }]}>
           {completo ? (
             <>
-              <Text style={[styles.pose, { color: colors.success }]}>Listo: {POSES.length} capturas tomadas.</Text>
-              <Button label={guardando ? 'Guardando...' : 'Guardar rostro'} onPress={guardar} loading={guardando} />
+              <Text style={[styles.pose, { color: colors.success }]}>Listo: {poses.length} capturas tomadas.</Text>
+              <Button
+                label={guardando ? 'Guardando...' : modo === 'reforzar' ? 'Agregar capturas' : modo === 'reemplazar' ? 'Enviar para aprobación' : 'Guardar rostro'}
+                onPress={guardar}
+                loading={guardando}
+              />
               <View style={{ height: spacing.sm }} />
               <Button label="Empezar de nuevo" variant="outline" onPress={() => setMuestras([])} />
             </>
           ) : (
             <>
               <Text style={styles.pose}>
-                {muestras.length} de {POSES.length} capturas tomadas
+                {muestras.length} de {poses.length} capturas tomadas
               </Text>
               <Button label={muestras.length === 0 ? 'Iniciar captura' : 'Continuar captura'} onPress={abrirCaptura} />
             </>
@@ -150,7 +213,7 @@ export default function EnrolarRostroScreen() {
         visible={abierto}
         titulo={colaborador ? `Rostro de ${colaborador.nombre}` : 'Registrar rostro'}
         instruccion={poseActual?.texto}
-        progreso={{ actual: muestras.length, total: POSES.length }}
+        progreso={{ actual: muestras.length, total: poses.length }}
         error={error}
         onFoto={alFoto}
         onClose={() => setAbierto(false)}

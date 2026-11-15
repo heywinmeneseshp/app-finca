@@ -9,7 +9,7 @@ export default function AppLayout() {
   const hasPermission = useSessionStore((s) => s.hasPermission);
   const router = useRouter();
   // El motor facial solo se carga para quien usa funciones de rostro (consume memoria al iniciar).
-  const usaRostro = hasPermission('asistencia.marcar') || hasPermission('asistencia.marcar_cuadrilla') || hasPermission('colaborador.editar');
+  const usaRostro = hasPermission('asistencia.marcar') || hasPermission('asistencia.marcar_cuadrilla') || hasPermission('asistencia.registrar') || hasPermission('colaborador.editar') || hasPermission('colaborador.crear');
   return (
     <>
     <Stack
@@ -37,9 +37,9 @@ export default function AppLayout() {
       <Stack.Screen name="precalibrador" options={{ title: 'Precalibrador' }} />
       <Stack.Screen name="colaboradores" options={{ title: 'Colaboradores' }} />
       <Stack.Screen name="crear-colaborador" options={{ title: 'Nuevo colaborador' }} />
+      <Stack.Screen name="mi-ficha" options={{ title: 'Mi ficha' }} />
       <Stack.Screen name="asistencia" options={{ title: 'Asistencia' }} />
       <Stack.Screen name="enrolar-rostro" options={{ title: 'Registrar rostro' }} />
-      <Stack.Screen name="prueba-rostro" options={{ title: 'Prueba de reconocimiento' }} />
     </Stack>
     {usaRostro && <FaceEngine />}
     </>
