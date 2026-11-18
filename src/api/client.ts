@@ -61,7 +61,7 @@ type RefreshResult = { ok: true; accessToken: string } | { ok: false; reason: 'i
 
 // 'invalid' = el backend rechazó el refresh token (único caso que amerita cerrar sesión). 'network' = cualquier
 // otra falla: la sesión local sigue intacta para no dejar al usuario sin poder abrir la app en el campo.
-export const refreshAccessToken = async (): Promise<RefreshResult> => {
+const renovarToken = async (): Promise<RefreshResult> => {
   const refreshToken = await tokenStorage.getRefreshToken();
   if (!refreshToken) return { ok: false, reason: 'invalid' };
 
@@ -77,11 +77,31 @@ export const refreshAccessToken = async (): Promise<RefreshResult> => {
     return { ok: false, reason: 'network' };
   }
 
-  if (response.status === 401 || response.status === 403) return { ok: false, reason: 'invalid' };
+  if (response.status === 401 || response.status === 403) {
+    const actual = await tokenStorage.getRefreshToken();
+    const accessActual = await tokenStorage.getAccessToken();
+    if (actual && actual !== refreshToken && accessActual) return { ok: true, accessToken: accessActual };
+    return { ok: false, reason: 'invalid' };
+  }
   if (!response.ok || !envelope.success) return { ok: false, reason: 'network' };
 
   await tokenStorage.setTokens(envelope.data.accessToken, envelope.data.refreshToken);
   return { ok: true, accessToken: envelope.data.accessToken };
+};
+
+// El backend rota el refresh token: cada uno sirve UNA sola vez. Si dos peticiones (perfil, sincronización, traza en segundo plano...) reciben 401 a la
+// vez y cada una pide su refresh con el mismo token, la segunda llega con un token ya usado, el backend la rechaza y la app cerraba la sesión sola.
+// Por eso: (1) una sola renovación a la vez, que todas las peticiones comparten, y (2) si el backend rechaza el token pero el guardado ya cambió
+// (otra renovación se adelantó), se usa el nuevo en vez de cerrar la sesión.
+let renovando: Promise<RefreshResult> | null = null;
+
+export const refreshAccessToken = (): Promise<RefreshResult> => {
+  if (!renovando) {
+    renovando = renovarToken().finally(() => {
+      renovando = null;
+    });
+  }
+  return renovando;
 };
 
 export const apiRequest = async <T>(path: string, options: RequestOptions = {}): Promise<T> => {
